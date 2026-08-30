@@ -39,7 +39,6 @@ async function main() {
         data: {
           lotId: lot.id,
           bidderName,
-          bidderEmail: "seed@example.com",
           amountPence
         }
       });
