@@ -1,0 +1,35 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Lot {
+  id                  String   @id @default(cuid())
+  golfClub            String
+  location            String
+  expiry              DateTime
+  format              String
+  startingBidPence    Int      @default(0)
+  minimumIncrementPence Int    @default(500)
+  displayOrder        Int      @default(0)
+  active              Boolean  @default(true)
+  bids                Bid[]
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model Bid {
+  id          String   @id @default(cuid())
+  lotId       String
+  lot         Lot      @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  bidderName  String
+  amountPence Int
+  createdAt   DateTime @default(now())
+
+  @@index([lotId, amountPence])
+  @@index([lotId, createdAt])
+}
