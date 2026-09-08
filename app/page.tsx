@@ -43,10 +43,7 @@ export default async function Home() {
     <main>
       <section className="hero">
         <div>
-          <p className="eyebrow">
-            CHARITY GOLF FOUR-BALL AUCTION
-          </p>
-
+          <p className="eyebrow">CHARITY GOLF FOUR-BALL AUCTION</p>
           <h1>Supporting the Joshua Tarrant Trust</h1>
 
           <p className="intro">
@@ -61,9 +58,7 @@ export default async function Home() {
           </p>
 
           <p className="intro">
-            <strong>
-              Auction closes at 4:00pm on Saturday 12 September 2026.
-            </strong>
+            <strong>Auction closes at 4:00pm on Saturday 12 September 2026.</strong>
           </p>
 
           {auctionClosed && (
@@ -83,11 +78,16 @@ export default async function Home() {
           </p>
         </div>
 
-        <div className="raised">
-          <span>Current total</span>
-          <strong>
-            £{Math.round(total / 100).toLocaleString("en-GB")}
-          </strong>
+        <div className="heroSide">
+          <div className="raised">
+            <span>Current total</span>
+            <strong>£{Math.round(total / 100).toLocaleString("en-GB")}</strong>
+          </div>
+
+          <div className="qrCode">
+            <img src="/auction-qr.svg" alt="QR code for the Charity Golf Auction website" />
+            <strong>Scan to go to the website</strong>
+          </div>
         </div>
       </section>
 
@@ -97,7 +97,6 @@ export default async function Home() {
 
       <section className="charityInfo">
         <p className="eyebrow">ABOUT THE CHARITY</p>
-
         <h2>Joshua Tarrant Trust</h2>
 
         <p>
