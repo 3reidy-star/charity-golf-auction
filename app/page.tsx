@@ -85,7 +85,7 @@ export default async function Home() {
           </div>
 
           <div className="qrCode">
-            <img src="/auction-qr.svg" alt="QR code for the Charity Golf Auction website" />
+            <img src="/auction-qr2.svg" alt="QR code for the Charity Golf Auction website" />
             <strong>Scan to go to the website</strong>
           </div>
         </div>
