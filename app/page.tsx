@@ -28,6 +28,7 @@ export default async function Home() {
     location: lot.location,
     expiry: lot.expiry.toISOString(),
     format: lot.format,
+    sold: !lot.active,
     active: lot.active && !auctionClosed,
     minimumIncrementPence: lot.minimumIncrementPence,
     currentBidPence: lot.bids[0]?.amountPence ?? null,
