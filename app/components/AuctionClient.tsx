@@ -10,6 +10,7 @@ type Lot = {
   expiry: string;
   format: string;
   active: boolean;
+  sold: boolean;
   minimumIncrementPence: number;
   currentBidPence: number | null;
   bidderName: string | null;
@@ -38,6 +39,8 @@ export default function AuctionClient({ lots }: { lots: Lot[] }) {
   const [success, setSuccess] = useState("");
 
   const openBid = (lot: Lot) => {
+    if (!lot.active || lot.sold) return;
+
     const minimumPence = lot.currentBidPence
       ? lot.currentBidPence + lot.minimumIncrementPence
       : lot.minimumIncrementPence;
@@ -69,7 +72,6 @@ export default function AuctionClient({ lots }: { lots: Lot[] }) {
     });
 
     const data = await res.json();
-
     setBusy(false);
 
     if (!res.ok) {
@@ -106,12 +108,16 @@ export default function AuctionClient({ lots }: { lots: Lot[] }) {
             <div className="price">{formatMoney(lot.currentBidPence)}</div>
             <div>{lot.bidderName || "—"}</div>
             <div>
-              <button
-                disabled={!lot.active}
-                onClick={() => openBid(lot)}
-              >
-                {lot.active ? "Place bid" : "Closed"}
-              </button>
+              {lot.sold ? (
+                <strong style={{ color: "#9c2f2f", fontSize: 16 }}>SOLD</strong>
+              ) : (
+                <button
+                  disabled={!lot.active}
+                  onClick={() => openBid(lot)}
+                >
+                  {lot.active ? "Place bid" : "Closed"}
+                </button>
+              )}
             </div>
           </div>
         ))}
@@ -132,17 +138,21 @@ export default function AuctionClient({ lots }: { lots: Lot[] }) {
 
             <div className="mobileBid">
               <div>
-                <span>Current bid</span>
+                <span>{lot.sold ? "Sold for" : "Current bid"}</span>
                 <strong>{formatMoney(lot.currentBidPence)}</strong>
                 <small>{lot.bidderName || "No bidder yet"}</small>
               </div>
 
-              <button
-                disabled={!lot.active}
-                onClick={() => openBid(lot)}
-              >
-                {lot.active ? "Place bid" : "Closed"}
-              </button>
+              {lot.sold ? (
+                <strong style={{ color: "#9c2f2f", fontSize: 20 }}>SOLD</strong>
+              ) : (
+                <button
+                  disabled={!lot.active}
+                  onClick={() => openBid(lot)}
+                >
+                  {lot.active ? "Place bid" : "Closed"}
+                </button>
+              )}
             </div>
           </article>
         ))}
@@ -166,12 +176,10 @@ export default function AuctionClient({ lots }: { lots: Lot[] }) {
             </button>
 
             <p className="eyebrow">PLACE A BID</p>
-
             <h2>{selected.golfClub}</h2>
 
             <p className="modalSub">
-              Current bid:{" "}
-              <strong>{formatMoney(selected.currentBidPence)}</strong>
+              Current bid: <strong>{formatMoney(selected.currentBidPence)}</strong>
             </p>
 
             <form onSubmit={submit}>
@@ -200,10 +208,7 @@ export default function AuctionClient({ lots }: { lots: Lot[] }) {
               {error && <div className="error">{error}</div>}
               {success && <div className="success">{success}</div>}
 
-              <button
-                className="submit"
-                disabled={busy}
-              >
+              <button className="submit" disabled={busy}>
                 {busy ? "Placing bid…" : "Confirm bid"}
               </button>
             </form>
