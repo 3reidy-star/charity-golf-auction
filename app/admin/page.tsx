@@ -36,13 +36,10 @@ export default async function AdminPage({
     return (
       <main style={{ maxWidth: 500, margin: "80px auto", padding: 24 }}>
         <h1>Auction Admin</h1>
-
         <p>Enter the administrator password.</p>
 
         {params.error && (
-          <p style={{ color: "crimson" }}>
-            Incorrect password.
-          </p>
+          <p style={{ color: "crimson" }}>Incorrect password.</p>
         )}
 
         <form action={loginAdmin}>
@@ -58,24 +55,17 @@ export default async function AdminPage({
               fontSize: 16,
             }}
           />
-
-          <button type="submit">
-            Sign in
-          </button>
+          <button type="submit">Sign in</button>
         </form>
       </main>
     );
   }
 
   const lots = await prisma.lot.findMany({
-    orderBy: {
-      displayOrder: "asc",
-    },
+    orderBy: { displayOrder: "asc" },
     include: {
       bids: {
-        orderBy: {
-          createdAt: "desc",
-        },
+        orderBy: { createdAt: "desc" },
       },
     },
   });
@@ -84,7 +74,6 @@ export default async function AdminPage({
     const highest = [...lot.bids].sort(
       (a, b) => b.amountPence - a.amountPence
     )[0];
-
     return sum + (highest?.amountPence ?? 0);
   }, 0);
 
@@ -103,15 +92,15 @@ export default async function AdminPage({
           <p style={{ margin: 0 }}>CHARITY AUCTION</p>
           <h1 style={{ marginTop: 4 }}>Admin</h1>
           <p>
-            Current winning total:{" "}
-            <strong>{money(total)}</strong>
+            Current winning total: <strong>{money(total)}</strong>
+          </p>
+          <p style={{ marginBottom: 0, color: "#66736b" }}>
+            When the live bidding finishes on a club, press <strong>Mark sold</strong>. The public page will immediately show SOLD and stop accepting bids for that club.
           </p>
         </div>
 
         <form action={logoutAdmin}>
-          <button type="submit">
-            Sign out
-          </button>
+          <button type="submit">Sign out</button>
         </form>
       </div>
 
@@ -119,17 +108,17 @@ export default async function AdminPage({
         const sortedBids = [...lot.bids].sort(
           (a, b) => b.amountPence - a.amountPence
         );
-
         const winningBid = sortedBids[0];
 
         return (
           <section
             key={lot.id}
             style={{
-              border: "1px solid #ddd",
+              border: lot.active ? "1px solid #ddd" : "2px solid #9c2f2f",
               borderRadius: 12,
               padding: 20,
               marginBottom: 20,
+              background: lot.active ? "white" : "#fff7f7",
             }}
           >
             <div
@@ -141,45 +130,27 @@ export default async function AdminPage({
               }}
             >
               <div>
-                <h2 style={{ marginBottom: 5 }}>
-                  {lot.golfClub}
-                </h2>
+                <h2 style={{ marginBottom: 5 }}>{lot.golfClub}</h2>
 
                 <p style={{ marginTop: 0 }}>
-                  {lot.active ? "Open" : "Closed"}
+                  <strong style={{ color: lot.active ? "#195633" : "#9c2f2f" }}>
+                    {lot.active ? "OPEN" : "SOLD"}
+                  </strong>
                   {winningBid && (
                     <>
-                      {" "}
-                      · Winning bid{" "}
-                      <strong>
-                        {money(winningBid.amountPence)}
-                      </strong>{" "}
-                      by{" "}
-                      <strong>
-                        {winningBid.bidderName}
-                      </strong>
+                      {" "}· {lot.active ? "Current highest bid" : "Sold for"}{" "}
+                      <strong>{money(winningBid.amountPence)}</strong>{" "}
+                      by <strong>{winningBid.bidderName}</strong>
                     </>
                   )}
                 </p>
               </div>
 
               <form action={toggleLot}>
-                <input
-                  type="hidden"
-                  name="lotId"
-                  value={lot.id}
-                />
-
-                <input
-                  type="hidden"
-                  name="active"
-                  value={String(lot.active)}
-                />
-
+                <input type="hidden" name="lotId" value={lot.id} />
+                <input type="hidden" name="active" value={String(lot.active)} />
                 <button type="submit">
-                  {lot.active
-                    ? "Close lot"
-                    : "Reopen lot"}
+                  {lot.active ? "Mark sold" : "Reopen lot"}
                 </button>
               </form>
             </div>
@@ -188,12 +159,7 @@ export default async function AdminPage({
               <p>No bids yet.</p>
             ) : (
               <div style={{ overflowX: "auto" }}>
-                <table
-                  style={{
-                    width: "100%",
-                    borderCollapse: "collapse",
-                  }}
-                >
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead>
                     <tr>
                       <th align="left">Bidder</th>
@@ -206,39 +172,22 @@ export default async function AdminPage({
                   <tbody>
                     {lot.bids.map((bid) => (
                       <tr key={bid.id}>
-                        <td style={{ padding: "10px 0" }}>
-                          {bid.bidderName}
-                        </td>
-
+                        <td style={{ padding: "10px 0" }}>{bid.bidderName}</td>
+                        <td>{money(bid.amountPence)}</td>
                         <td>
-                          {money(bid.amountPence)}
+                          {bid.createdAt.toLocaleString("en-GB", {
+                            timeZone: "Europe/London",
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
                         </td>
-
-                        <td>
-                          {bid.createdAt.toLocaleString(
-                            "en-GB",
-                            {
-                              timeZone: "Europe/London",
-                              day: "2-digit",
-                              month: "2-digit",
-                              year: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            }
-                          )}
-                        </td>
-
                         <td align="right">
                           <form action={deleteBid}>
-                            <input
-                              type="hidden"
-                              name="bidId"
-                              value={bid.id}
-                            />
-
-                            <button type="submit">
-                              Delete
-                            </button>
+                            <input type="hidden" name="bidId" value={bid.id} />
+                            <button type="submit">Delete</button>
                           </form>
                         </td>
                       </tr>
