@@ -60,6 +60,10 @@ export default async function Home() {
         </div>
       </section>
 
+      <div style={{ background: "#eef1ed", textAlign: "center", padding: "9px 12px", fontWeight: 800, fontSize: 17 }}>
+        Bid online at: https://charity-golf-auction.vercel.app
+      </div>
+
       <section className="auction">
         <AuctionClient lots={lots} />
       </section>
