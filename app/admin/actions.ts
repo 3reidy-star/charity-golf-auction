@@ -41,6 +41,37 @@ export async function logoutAdmin() {
   redirect("/admin");
 }
 
+export async function addLot(formData: FormData) {
+  await requireAdmin();
+
+  const golfClub = String(formData.get("golfClub") || "").trim();
+  const location = String(formData.get("location") || "").trim();
+  const format = String(formData.get("format") || "").trim();
+  const expiry = String(formData.get("expiry") || "").trim();
+
+  if (!golfClub || !location || !format || !expiry) return;
+
+  const lastLot = await prisma.lot.findFirst({
+    orderBy: { displayOrder: "desc" },
+    select: { displayOrder: true },
+  });
+
+  await prisma.lot.create({
+    data: {
+      golfClub,
+      location,
+      format,
+      expiry: new Date(`${expiry}T12:00:00.000Z`),
+      displayOrder: (lastLot?.displayOrder ?? 0) + 1,
+      minimumIncrementPence: 500,
+      active: true,
+    },
+  });
+
+  revalidatePath("/");
+  revalidatePath("/admin");
+}
+
 export async function deleteBid(formData: FormData) {
   await requireAdmin();
   const bidId = String(formData.get("bidId") || "");
