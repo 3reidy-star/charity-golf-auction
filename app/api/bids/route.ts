@@ -1,18 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/app/lib";
 
-const AUCTION_CLOSES_AT = new Date("2026-09-12T15:00:00.000Z");
-// 4:00pm UK time (BST)
-
 export async function POST(request: Request) {
   try {
-    if (new Date() >= AUCTION_CLOSES_AT) {
-      return NextResponse.json(
-        { error: "The auction has now closed." },
-        { status: 409 }
-      );
-    }
-
     const body = await request.json();
 
     const lotId = String(body.lotId || "");
@@ -70,31 +60,25 @@ export async function POST(request: Request) {
       bidId: result.id,
     });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "UNKNOWN";
+    const message = error instanceof Error ? error.message : "UNKNOWN";
 
     if (message === "LOT_CLOSED") {
       return NextResponse.json(
-        { error: "This golf club is closed for bidding." },
+        { error: "This golf club has been sold and is closed for bidding." },
         { status: 409 }
       );
     }
 
     if (message.startsWith("MINIMUM:")) {
       const minimum = Number(message.split(":")[1]) / 100;
-
       return NextResponse.json(
-        {
-          error: `Your bid must be at least £${minimum.toFixed(0)}.`,
-        },
+        { error: `Your bid must be at least £${minimum.toFixed(0)}.` },
         { status: 409 }
       );
     }
 
     return NextResponse.json(
-      {
-        error: "We couldn't place that bid. Please try again.",
-      },
+      { error: "We couldn't place that bid. Please try again." },
       { status: 500 }
     );
   }
