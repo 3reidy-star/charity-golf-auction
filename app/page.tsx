@@ -47,36 +47,11 @@ export default async function Home() {
           <p className="eyebrow">CHARITY GOLF FOUR-BALL AUCTION</p>
           <h1>Supporting the Joshua Tarrant Trust</h1>
 
-          <p className="intro">
-            Bid on a four-ball at one of our donated golf clubs and help
-            raise valuable funds for the Joshua Tarrant Trust.
-          </p>
-
-          <p className="intro">
-            The Joshua Tarrant Trust is an East of England registered
-            charity dedicated to supporting children with brain tumours.
-            Joshua William Tarrant is the inspiration behind the charity.
-          </p>
-
-          <p className="intro">
-            <strong>Auction closes at 4:00pm on Saturday 12 September 2026.</strong>
-          </p>
-
           {auctionClosed && (
             <p className="intro">
               <strong>The auction is now closed.</strong>
             </p>
           )}
-
-          <p className="intro">
-            <a
-              href="https://joshuatarranttrust.org.uk/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Visit the Joshua Tarrant Trust website
-            </a>
-          </p>
         </div>
 
         <div className="raised">
