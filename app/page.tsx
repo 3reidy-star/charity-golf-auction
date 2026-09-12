@@ -3,12 +3,7 @@ import { prisma } from "@/app/lib";
 
 export const dynamic = "force-dynamic";
 
-const AUCTION_CLOSES_AT = new Date("2026-09-12T15:00:00.000Z");
-// 4:00pm UK time (BST)
-
 export default async function Home() {
-  const auctionClosed = new Date() >= AUCTION_CLOSES_AT;
-
   const records = await prisma.lot.findMany({
     orderBy: { displayOrder: "asc" },
     include: {
@@ -29,7 +24,7 @@ export default async function Home() {
     expiry: lot.expiry.toISOString(),
     format: lot.format,
     sold: !lot.active,
-    active: lot.active && !auctionClosed,
+    active: lot.active,
     minimumIncrementPence: lot.minimumIncrementPence,
     currentBidPence: lot.bids[0]?.amountPence ?? null,
     bidderName: lot.bids[0]?.bidderName ?? null,
@@ -46,12 +41,6 @@ export default async function Home() {
         <div>
           <p className="eyebrow">CHARITY GOLF FOUR-BALL AUCTION</p>
           <h1>Supporting the Joshua Tarrant Trust</h1>
-
-          {auctionClosed && (
-            <p className="intro">
-              <strong>The auction is now closed.</strong>
-            </p>
-          )}
         </div>
 
         <div className="raised">
