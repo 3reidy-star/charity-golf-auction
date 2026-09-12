@@ -11,15 +11,20 @@ function adminToken() {
   return createHash("sha256").update(password).digest("hex");
 }
 
+async function requireAdmin() {
+  const cookieStore = await cookies();
+  if (cookieStore.get("auction_admin")?.value !== adminToken()) {
+    redirect("/admin");
+  }
+}
+
 export async function loginAdmin(formData: FormData) {
   const password = String(formData.get("password") || "");
-
   if (!process.env.ADMIN_PASSWORD || password !== process.env.ADMIN_PASSWORD) {
     redirect("/admin?error=1");
   }
 
   const cookieStore = await cookies();
-
   cookieStore.set("auction_admin", adminToken(), {
     httpOnly: true,
     sameSite: "strict",
@@ -27,7 +32,6 @@ export async function loginAdmin(formData: FormData) {
     path: "/",
     maxAge: 60 * 60 * 12,
   });
-
   redirect("/admin");
 }
 
@@ -38,40 +42,43 @@ export async function logoutAdmin() {
 }
 
 export async function deleteBid(formData: FormData) {
-  const cookieStore = await cookies();
+  await requireAdmin();
+  const bidId = String(formData.get("bidId") || "");
+  if (bidId) await prisma.bid.delete({ where: { id: bidId } });
+  revalidatePath("/");
+  revalidatePath("/admin");
+}
 
-  if (cookieStore.get("auction_admin")?.value !== adminToken()) {
-    redirect("/admin");
-  }
+export async function editWinningBid(formData: FormData) {
+  await requireAdmin();
 
   const bidId = String(formData.get("bidId") || "");
+  const bidderName = String(formData.get("bidderName") || "").trim();
+  const amount = Number(formData.get("amount"));
 
-  if (bidId) {
-    await prisma.bid.delete({
-      where: { id: bidId },
-    });
-  }
+  if (!bidId || !bidderName || !Number.isFinite(amount) || amount <= 0) return;
+
+  await prisma.bid.update({
+    where: { id: bidId },
+    data: {
+      bidderName,
+      amountPence: Math.round(amount * 100),
+    },
+  });
 
   revalidatePath("/");
   revalidatePath("/admin");
 }
 
 export async function toggleLot(formData: FormData) {
-  const cookieStore = await cookies();
-
-  if (cookieStore.get("auction_admin")?.value !== adminToken()) {
-    redirect("/admin");
-  }
-
+  await requireAdmin();
   const lotId = String(formData.get("lotId") || "");
   const active = String(formData.get("active")) === "true";
 
   if (lotId) {
     await prisma.lot.update({
       where: { id: lotId },
-      data: {
-        active: !active,
-      },
+      data: { active: !active },
     });
   }
 
