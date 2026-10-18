@@ -31,9 +31,12 @@ on both boards. Buyer names are public; card details stay with SumUp.
 
 ### Deployment
 
-1. Apply the additive SQL in `scripts/drive-in-tables.sql` once against the
-   existing database before deploying this code, or review and apply
-   `npx prisma db push`. Do not reset or reseed the live auction database.
+1. Production Vercel builds run `scripts/prepare-drive-in.cjs`, which applies
+   the repeatable, additive SQL in `scripts/drive-in-tables.sql` using the
+   existing `DATABASE_URL`. It creates only the new Drive-In tables and indexes.
+   An advisory lock serializes concurrent deployments. Preview/local builds skip
+   this step. For local setup, review and apply `npx prisma db push`.
+   Do not reset or reseed the live auction database.
 2. Configure server-only Vercel variables:
    - `SUMUP_API_KEY`: API key with checkout read/write permissions.
    - `SUMUP_MERCHANT_CODE`: the club’s merchant code.
