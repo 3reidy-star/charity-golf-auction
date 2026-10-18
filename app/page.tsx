@@ -53,6 +53,8 @@ export default async function Home() {
         Bid online at: https://charity-golf-auction.vercel.app
       </div>
 
+      <nav className="squaresNav"><a href="/squares">Captain’s Drive-In · Choose your £2 or £10 squares →</a></nav>
+
       <section className="auction">
         <AuctionClient lots={lots} />
       </section>

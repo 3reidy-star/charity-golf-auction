@@ -33,3 +33,36 @@ model Bid {
   @@index([lotId, amountPence])
   @@index([lotId, createdAt])
 }
+model SquareBoard {
+  id            String @id
+  closed        Boolean @default(false)
+  winningSquare String?
+}
+
+model SquarePurchase {
+  id            String @id @default(uuid())
+  boardId       String
+  buyerName     String
+  squares       String[]
+  amountPence   Int
+  status        String @default("PENDING")
+  checkoutId    String? @unique
+  checkoutUrl   String?
+  expiresAt     DateTime
+  paidAt        DateTime?
+  createdAt     DateTime @default(now())
+  claims        SquareClaim[]
+
+  @@index([boardId, status, expiresAt])
+}
+
+// A claim remains exclusive until SumUp confirms payment or expiry.
+model SquareClaim {
+  boardId    String
+  code       String
+  purchaseId String
+  purchase   SquarePurchase @relation(fields: [purchaseId], references: [id])
+
+  @@id([boardId, code])
+  @@index([purchaseId])
+}
