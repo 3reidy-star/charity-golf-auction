@@ -1,5 +1,6 @@
 import { prisma } from "@/app/lib";
 import { Checkout, sumup, verifiedOutcome } from "./sumup";
+import { deactivateUnpaidCheckout } from "./cancel-checkout";
 
 export async function reconcilePurchase(id: string) {
   const order = await prisma.squarePurchase.findUnique({ where: { id } });
@@ -26,10 +27,26 @@ async function settle(id: string, status: string) {
     const changed = await tx.squarePurchase.updateMany({ where: { id, status: "PENDING" }, data: {
       status, ...(status === "PAID" ? { paidAt: new Date() } : {}),
     } });
-    if (changed.count && status === "EXPIRED") await tx.squareClaim.deleteMany({ where: { purchaseId: id } });
+    if (changed.count && (status === "EXPIRED" || status === "CANCELLED")) await tx.squareClaim.deleteMany({ where: { purchaseId: id } });
   });
 }
 export async function reconcileExpired(boardId: string) {
   const orders = await prisma.squarePurchase.findMany({ where: { boardId, status: "PENDING", expiresAt: { lt: new Date() } }, select: { id: true }, take: 12 });
   await Promise.allSettled(orders.map(order => reconcilePurchase(order.id)));
+}
+
+export async function cancelUnpaidPurchase(id: string) {
+  const order = await reconcilePurchase(id);
+  if (!order) throw new Error("MISSING");
+  if (order.status === "PAID") throw new Error("PAID");
+  if (order.status !== "PENDING") return;
+  try {
+    await deactivateUnpaidCheckout(order, sumup);
+  } catch (error) {
+    // A payment may have completed between our read and the deactivation.
+    // Reconcile it without ever dropping its claim on an uncertain outcome.
+    await reconcilePurchase(id).catch(() => undefined);
+    throw error;
+  }
+  await settle(id, "CANCELLED");
 }

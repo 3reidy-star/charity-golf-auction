@@ -28,3 +28,28 @@ test("redirects only use secure SumUp hosted checkout",()=>{
  assert.equal(checkoutUrl({...checkout,hosted_checkout_url:"https://checkout.sumup.com/pay/test"}),"https://checkout.sumup.com/pay/test");
  for(const url of ["https://example.com","http://checkout.sumup.com/pay/test","https://checkout.sumup.com.evil.example/",undefined])assert.throws(()=>checkoutUrl({...checkout,hosted_checkout_url:url}));
 });
+
+import { deactivateUnpaidCheckout } from "../app/squares/lib/cancel-checkout";
+const reservation={...order,checkoutId:"checkout",createdAt:new Date(0)};
+test("clearing a paid reservation never deactivates its checkout",async()=>{
+ const methods:string[]=[];
+ await assert.rejects(deactivateUnpaidCheckout(reservation,async<T>(_path:string,init?:RequestInit)=>{methods.push(init?.method||"GET");return checkout as T;}),/PAID/);
+ assert.deepEqual(methods,["GET"]);
+});
+test("unpaid checkout must successfully deactivate before claims can be cleared",async()=>{
+ const methods:string[]=[];
+ await deactivateUnpaidCheckout(reservation,async<T>(_path:string,init?:RequestInit)=>{methods.push(init?.method||"GET");return {...checkout,status:init?.method==="DELETE"?"EXPIRED":"PENDING"} as T;});
+ assert.deepEqual(methods,["GET","DELETE"]);
+ await assert.rejects(deactivateUnpaidCheckout(reservation,async<T>(_path:string,init?:RequestInit)=>{if(init?.method==="DELETE")throw new Error("timeout");return {...checkout,status:"PENDING"} as T;}),/timeout/);
+});
+test("payment race and mismatched cancellation response block releasing squares",async()=>{
+ for(const response of [{...checkout,status:"PAID"},{...checkout,id:"other",status:"EXPIRED"},{...checkout,amount:2,status:"EXPIRED"}]){
+  await assert.rejects(deactivateUnpaidCheckout(reservation,async<T>(_path:string,init?:RequestInit)=>(init?.method==="DELETE"?response:{...checkout,status:"PENDING"}) as T));
+ }
+});
+test("missing checkout cannot clear a reservation while creation may still be running",async()=>{
+ const missing={...reservation,checkoutId:null,createdAt:new Date(100000)};
+ const provider=async<T>()=>[] as T;
+ await assert.rejects(deactivateUnpaidCheckout(missing,provider,110000),/CREATING/);
+ await deactivateUnpaidCheckout(missing,provider,200000);
+});

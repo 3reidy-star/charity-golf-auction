@@ -16,7 +16,7 @@ export default function SquaresClient() {
   useEffect(()=>{
     if(!purchaseId)return;
     let active=true;
-    const check=async()=>{try{const r=await fetch(`/api/squares/payment?id=${encodeURIComponent(purchaseId)}`);const data=await r.json();if(!r.ok)throw new Error(data.error);if(active){setPayment(data);setPaymentError("");if(data.status==="PAID"||data.status==="EXPIRED")load();}}catch(e){if(active)setPaymentError(e instanceof Error?e.message:"Unable to verify payment.");}};
+    const check=async()=>{try{const r=await fetch(`/api/squares/payment?id=${encodeURIComponent(purchaseId)}`);const data=await r.json();if(!r.ok)throw new Error(data.error);if(active){setPayment(data);setPaymentError("");if(data.status==="PAID"||data.status==="EXPIRED"||data.status==="CANCELLED")load();}}catch(e){if(active)setPaymentError(e instanceof Error?e.message:"Unable to verify payment.");}};
     check();const timer=setInterval(check,10000);return()=>{active=false;clearInterval(timer);};
   },[purchaseId,load]);
   const board=boards.find(b=>b.id===boardId);
@@ -32,8 +32,8 @@ export default function SquaresClient() {
   const paid=board?.claims.filter(c=>c.status==="PAID").length??0;
   return <section className="squaresContent">
     <div className="boardTabs" aria-label="Choose a board">{boards.map(b=><button key={b.id} type="button" aria-pressed={boardId===b.id} className={boardId===b.id?"active":""} onClick={()=>{setBoardId(b.id);setSelected([]);setError("");}}><strong>{b.title}</strong><span>{pounds(b.pricePence)} per square</span></button>)}</div>
-    {purchaseId&&<section className="paymentNotice" aria-live="polite"><h2>{payment?.status==="PAID"?"Thank you — your squares are confirmed!":payment?.status==="EXPIRED"?"Your reservation has expired":"Your reservation"}</h2>
-      {payment&&<><p>{boards.find(b=>b.id===payment.boardId)?.title} · {payment.squares.join(", ")} · {pounds(payment.amountPence)}</p><p>{payment.status==="PAID"?"Payment confirmed by SumUp.":payment.status==="EXPIRED"?"No payment was confirmed. You can choose available squares again.":"Awaiting payment confirmation. Your squares remain reserved until SumUp confirms the outcome."}</p>{payment.status==="PENDING"&&payment.checkoutUrl&&new Date(payment.expiresAt).getTime()>Date.now()&&<a className="squareAction" href={payment.checkoutUrl}>Continue to SumUp</a>}</>}
+    {purchaseId&&<section className="paymentNotice" aria-live="polite"><h2>{payment?.status==="PAID"?"Thank you — your squares are confirmed!":payment?.status==="CANCELLED"?"Your reservation was cancelled":payment?.status==="EXPIRED"?"Your reservation has expired":"Your reservation"}</h2>
+      {payment&&<><p>{boards.find(b=>b.id===payment.boardId)?.title} · {payment.squares.join(", ")} · {pounds(payment.amountPence)}</p><p>{payment.status==="PAID"?"Payment confirmed by SumUp.":payment.status==="CANCELLED"?"An administrator cleared this unpaid reservation. You can choose available squares again.":payment.status==="EXPIRED"?"No payment was confirmed. You can choose available squares again.":"Awaiting payment confirmation. Your squares remain reserved until SumUp confirms the outcome."}</p>{payment.status==="PENDING"&&payment.checkoutUrl&&new Date(payment.expiresAt).getTime()>Date.now()&&<a className="squareAction" href={payment.checkoutUrl}>Continue to SumUp</a>}</>}
       {paymentError&&<p className="error">{paymentError}</p>}
       <button type="button" className="textButton" onClick={()=>{localStorage.removeItem("drive-in-purchase");setPurchaseId(null);setPayment(null);window.history.replaceState(null,"","/squares");}}>Dismiss</button>
     </section>}
