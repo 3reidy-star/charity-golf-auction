@@ -40,7 +40,7 @@ export default async function Home() {
       <section className="hero">
         <div>
           <p className="eyebrow">CHARITY GOLF FOUR-BALL AUCTION</p>
-          <h1>Supporting the Joshua Tarrant Trust</h1>
+          <h1>Supporting Spread a Smile</h1>
         </div>
 
         <div className="raised">
@@ -61,30 +61,30 @@ export default async function Home() {
 
       <section className="charityInfo">
         <p className="eyebrow">ABOUT THE CHARITY</p>
-        <h2>Joshua Tarrant Trust</h2>
+        <h2>Spread a Smile</h2>
 
         <p>
-          The Joshua Tarrant Trust is dedicated to supporting children
-          with brain tumours across the East of England. Joshua William
-          Tarrant is the inspiration behind the charity.
+          Spread a Smile supports seriously ill children and young people
+          through hospital and virtual entertainer visits, family events
+          and creative activities.
         </p>
 
         <p>
           Thank you to everyone taking part in the auction and helping us
-          raise funds for the Trust.
+          raise funds for Spread a Smile.
         </p>
 
         <a
-          href="https://joshuatarranttrust.org.uk/"
+          href="https://spreadasmile.org/"
           target="_blank"
           rel="noopener noreferrer"
         >
-          Find out more about the Joshua Tarrant Trust
+          Find out more about Spread a Smile
         </a>
       </section>
 
       <footer>
-        Thank you for supporting the Joshua Tarrant Trust charity auction.
+        Thank you for supporting Spread a Smile charity auction.
       </footer>
     </main>
   );
