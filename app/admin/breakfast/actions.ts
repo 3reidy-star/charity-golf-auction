@@ -2,6 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/app/lib";
+import { validateBreakfastReset } from "@/app/breakfast/reset";
 import { parseNames, selectThree } from "@/app/breakfast/draw";
 import { requireBreakfastAdmin } from "./auth";
 export type BreakfastState = { error?: string; success?: string; winnerNames?: string[]; drawnAt?: string; entrantCount?: number };
@@ -15,13 +16,20 @@ export async function updateBreakfast(_previous: BreakfastState, data: FormData)
       await tx.$queryRaw`SELECT "id" FROM "BreakfastDraw" WHERE "id" = 'breakfast' FOR UPDATE`;
       const draw = await tx.breakfastDraw.findUnique({ where: { id: "breakfast" } });
       if (!draw) throw new Error("Breakfast setup is not available yet. Please check the deployment completed.");
+      if (operation === "reset-draw" || operation === "clear-breakfast") {
+        validateBreakfastReset(data.get("confirmation"), data.get("expectedDrawnAt"), draw.drawnAt);
+        if (operation === "clear-breakfast") await tx.breakfastEntry.deleteMany();
+        await tx.breakfastDraw.update({ where: { id: "breakfast" }, data: { winnerIds: [], winnerNames: [], drawnAt: null, entrantCount: null } });
+        message = operation === "clear-breakfast" ? "Breakfast names and test winners cleared. Ready for a fresh event." : "Winners cleared. The paid guest list has been kept and unlocked.";
+        return;
+      }
       if (draw.drawnAt) {
         if (operation === "draw") {
           result = { winnerNames: draw.winnerNames, drawnAt: draw.drawnAt.toISOString(), entrantCount: draw.entrantCount ?? 0 };
           message = "The saved winners are shown below.";
           return;
         }
-        throw new Error("The winners have already been drawn. The saved result cannot be changed.");
+        throw new Error("The winners have already been drawn. Reset the breakfast draw before editing the list.");
       }
       if (operation === "add") {
         const entries = parseNames(String(data.get("names") ?? ""));

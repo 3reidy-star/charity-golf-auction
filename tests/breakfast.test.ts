@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { validateBreakfastReset } from "../app/breakfast/reset";
 import { parseNames, selectThree } from "../app/breakfast/draw";
 
 test("paid names are normalised and duplicate guests rejected", () => {
@@ -37,4 +38,14 @@ test("the production random source returns three distinct entrants", () => {
   assert.equal(winners.length, 3);
   assert.equal(new Set(winners.map(e => e.id)).size, 3);
   assert.ok(winners.every(w => entries.includes(w)));
+});
+
+
+test("reset requires deliberate confirmation and cannot clear a newer draw", () => {
+  const drawnAt = new Date("2026-10-19T17:00:00Z");
+  for (const confirmation of [null, "", "reset", "YES"]) assert.throws(() => validateBreakfastReset(confirmation, drawnAt.toISOString(), drawnAt), /Type RESET/);
+  assert.throws(() => validateBreakfastReset("RESET", "", drawnAt), /changed in another window/);
+  assert.throws(() => validateBreakfastReset("RESET", "2026-10-19T16:00:00.000Z", drawnAt), /changed in another window/);
+  assert.doesNotThrow(() => validateBreakfastReset("RESET", drawnAt.toISOString(), drawnAt));
+  assert.doesNotThrow(() => validateBreakfastReset("RESET", "", null));
 });

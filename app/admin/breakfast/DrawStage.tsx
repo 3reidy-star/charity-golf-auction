@@ -1,17 +1,20 @@
 "use client";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { updateBreakfast } from "./actions";
-type Props = { names: string[]; savedNames: string[]; drawnAt: string | null; entrantCount: number };
-export default function DrawStage({ names, savedNames, drawnAt, entrantCount }: Props) {
+type Props = { names: string[]; savedNames: string[]; drawnAt: string | null; entrantCount: number; tv?: boolean };
+export default function DrawStage({ names, savedNames, drawnAt, entrantCount, tv = false }: Props) {
   const router = useRouter();
+  const stage = useRef<HTMLElement>(null), previousDrawnAt = useRef(drawnAt);
+  const [fullScreenError, setFullScreenError] = useState("");
   const [running, setRunning] = useState(false), [tick, setTick] = useState(0), [revealed, setRevealed] = useState(0);
   const [localResult, setLocalResult] = useState<{ names: string[]; drawnAt: string; entrantCount: number } | null>(null);
   const [error, setError] = useState("");
   const inFlight = useRef(false), timers = useRef<ReturnType<typeof setTimeout>[]>([]), mounted = useRef(true);
-  const winners = localResult?.names ?? savedNames;
-  const resultDate = localResult?.drawnAt ?? drawnAt;
-  const count = localResult?.entrantCount ?? entrantCount;
+  const winners = !running && drawnAt ? savedNames : localResult?.names ?? savedNames;
+  const resultDate = !running && drawnAt ? drawnAt : localResult?.drawnAt ?? drawnAt;
+  const count = !running && drawnAt ? entrantCount : localResult?.entrantCount ?? entrantCount;
   const complete = Boolean(resultDate) && !running;
   const visible = complete ? 3 : revealed;
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; timers.current.forEach(clearTimeout); }; }, []);
@@ -20,6 +23,26 @@ export default function DrawStage({ names, savedNames, drawnAt, entrantCount }: 
     const timer = setInterval(() => setTick(value => value + 1), 80);
     return () => clearInterval(timer);
   }, [running]);
+  useEffect(() => {
+    if (previousDrawnAt.current && !drawnAt) {
+      timers.current.forEach(clearTimeout); timers.current = [];
+      setLocalResult(null); setRevealed(0); setRunning(false); setError(""); inFlight.current = false;
+    }
+    previousDrawnAt.current = drawnAt;
+  }, [drawnAt]);
+  useEffect(() => {
+    if (!tv || running) return;
+    const timer = setInterval(() => router.refresh(), 3000);
+    return () => clearInterval(timer);
+  }, [tv, running, router]);
+  async function fullScreen() {
+    setFullScreenError("");
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else if (stage.current?.requestFullscreen) await stage.current.requestFullscreen();
+      else setFullScreenError("Use your browser’s full-screen option or cast this TV display to the screen.");
+    } catch { setFullScreenError("Use your browser’s full-screen option or cast this TV display to the screen."); }
+  }
   async function start() {
     if (inFlight.current || complete || names.length < 3) return;
     if (!window.confirm(`Select three winners from ${names.length} paid guests? The result will be saved and the guest list locked.`)) return;
@@ -44,7 +67,9 @@ export default function DrawStage({ names, savedNames, drawnAt, entrantCount }: 
       router.refresh();
     }
   }
-  return <section className={`drawStage ${running ? "isRunning" : ""} ${complete ? "isComplete" : ""}`} aria-busy={running}>
+  return <section ref={stage} className={`drawStage ${tv ? "tvStage" : ""} ${running ? "isRunning" : ""} ${complete ? "isComplete" : ""}`} aria-busy={running}>
+    {tv && <nav className="tvControls" aria-label="TV display controls"><Link href="/admin/breakfast">← Manage names</Link><button type="button" onClick={fullScreen}>⛶ Toggle full screen</button></nav>}
+    {fullScreenError && <p className="tvFullScreenHint" role="status">{fullScreenError}</p>}
     <div className="drawStageGlow" aria-hidden="true" />
     <p className="drawStageEyebrow">SPREAD A SMILE · BREAKFAST DRAW</p>
     <h2>{complete ? "Our three lucky winners!" : running ? "Here come the winners…" : "Who will be our lucky three?"}</h2>
@@ -55,14 +80,14 @@ export default function DrawStage({ names, savedNames, drawnAt, entrantCount }: 
       return <article key={index} className={`drawReel ${won ? "isWinner" : running ? "isSpinning" : ""}`}>
         <span className="drawReelLabel">WINNER {index + 1}</span>
         <span className="drawMedal">{won ? "★" : "?"}</span>
-        <div className="drawNameWindow"><strong className={running && !won ? "drawRollingName" : ""}>{won ? winners[index] : running ? rollingName : "Ready to win"}</strong></div>
+        <div className="drawNameWindow"><strong style={tv ? { fontSize: `clamp(24px, ${Math.min(4.4, Math.max(1.5, 100 / Math.max(1, (won ? winners[index] ?? "" : running ? rollingName : "Ready to win").length)))}vw, 100px)` } : undefined} className={running && !won ? "drawRollingName" : ""}>{won ? winners[index] : running ? rollingName : "Ready to win"}</strong></div>
         <span className="drawReelFoot">{won ? "CONGRATULATIONS!" : running ? "Selecting…" : "GOOD LUCK!"}</span>
       </article>;
     })}</div>
     <p className="drawAnnouncement" role="status" aria-live="polite" aria-atomic="true">{running ? visible ? `Winner ${visible}: ${winners[visible - 1]}.` : "Selecting three winners. Good luck!" : complete ? `The winners are ${winners.join(", ")}.` : `${names.length} paid guests entered.`}</p>
     {complete ? <div className="drawSaved"><span>✓ Result saved</span><p>Selected from {count} paid guests on {new Date(resultDate!).toLocaleString("en-GB", { timeZone: "Europe/London", dateStyle: "medium", timeStyle: "short" })}. Refreshing keeps the same winners.</p></div> : <>
       <button type="button" onClick={start} disabled={running || names.length < 3} className="drawStartButton">{running ? "Drawing the lucky three…" : "✦ Draw 3 winners"}</button>
-      <p className="drawStageNote">{names.length < 3 ? "Add at least three paid guests to start." : running ? "The result is being saved and revealed. Please keep this screen open." : `${names.length} guests entered · Check the list first — the result is permanent.`}</p>
+      <p className="drawStageNote">{names.length < 3 ? "Add at least three paid guests to start." : running ? "The result is being saved and revealed. Please keep this screen open." : `${names.length} guests entered · Check the list first — the result will be saved.`}</p>
     </>}
     {error && <p role="alert" className="drawError">{error}</p>}
     <p className="drawFairness">Each guest has the same chance. The server selects and saves the winners; the animation reveals the result.</p>
