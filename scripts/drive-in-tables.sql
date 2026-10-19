@@ -33,3 +33,20 @@ CREATE TABLE IF NOT EXISTS "SquareClaim" (
 CREATE INDEX IF NOT EXISTS "SquareClaim_purchaseId_idx" ON "SquareClaim"("purchaseId");
 
 COMMIT;
+
+-- Paid breakfast guests and a single saved draw. Existing auction/payment data
+-- is not changed. All list mutations and the draw lock the seeded state row.
+CREATE TABLE IF NOT EXISTS "BreakfastEntry" (
+  "id" TEXT NOT NULL PRIMARY KEY,
+  "name" TEXT NOT NULL,
+  "nameKey" TEXT NOT NULL UNIQUE,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS "BreakfastDraw" (
+  "id" TEXT NOT NULL PRIMARY KEY,
+  "winnerIds" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[],
+  "winnerNames" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[],
+  "entrantCount" INTEGER,
+  "drawnAt" TIMESTAMP(3)
+);
+INSERT INTO "BreakfastDraw" ("id") VALUES ('breakfast') ON CONFLICT DO NOTHING;

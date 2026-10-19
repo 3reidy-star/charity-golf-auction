@@ -66,3 +66,18 @@ model SquareClaim {
   @@id([boardId, code])
   @@index([purchaseId])
 }
+
+model BreakfastEntry {
+  id        String   @id @default(uuid())
+  name      String
+  nameKey   String   @unique
+  createdAt DateTime @default(now())
+}
+
+model BreakfastDraw {
+  id           String    @id
+  winnerIds    String[]  @default([])
+  winnerNames  String[]  @default([])
+  entrantCount Int?
+  drawnAt      DateTime?
+}

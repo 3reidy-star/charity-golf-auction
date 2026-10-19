@@ -65,3 +65,23 @@ During a SumUp outage claims remain reserved rather than risking double sales.
 Closing a board prevents new reservations; existing checkouts can still settle.
 
 Run `npm run test:squares` for the selection and payment-verification tests.
+
+
+## Breakfast paid guest draw
+
+Open `/admin`, sign in with the existing admin password, then choose **Breakfast
+paid guest list & draw 3 winners**. Add names only after breakfast has been paid
+for (one name per line). Each person receives one entry; add an initial or other
+detail for different people with the same name. Entries can be removed before
+the draw. **Select 3 winners** uses server-side cryptographic randomness without
+replacement and saves the result permanently. At least three guests are required.
+The guest list locks once drawn; refreshing or clicking twice cannot redraw it.
+Three animated name reels reveal the saved winners one at a time; the animation
+does not choose the winners. Reduced-motion preferences are respected.
+The list and results are admin-only. No breakfast payments are collected online.
+
+The existing production table setup also creates the two breakfast tables and
+seeds the draw state. It is additive and does not change auction bids or SumUp
+payments. Preview/local builds skip database setup as before.
+
+Run `npm run test:breakfast` to check name validation and winner selection.
