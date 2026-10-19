@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/app/lib";
 import { validateBreakfastReset } from "@/app/breakfast/reset";
-import { parseNames, selectThree } from "@/app/breakfast/draw";
+import { parseNames, selectOne } from "@/app/breakfast/draw";
 import { requireBreakfastAdmin } from "./auth";
 export type BreakfastState = { error?: string; success?: string; winnerNames?: string[]; drawnAt?: string; entrantCount?: number };
 export async function updateBreakfast(_previous: BreakfastState, data: FormData): Promise<BreakfastState> {
@@ -26,7 +26,7 @@ export async function updateBreakfast(_previous: BreakfastState, data: FormData)
       if (draw.drawnAt) {
         if (operation === "draw") {
           result = { winnerNames: draw.winnerNames, drawnAt: draw.drawnAt.toISOString(), entrantCount: draw.entrantCount ?? 0 };
-          message = "The saved winners are shown below.";
+          message = "The saved winner is shown below.";
           return;
         }
         throw new Error("The winners have already been drawn. Reset the breakfast draw before editing the list.");
@@ -44,10 +44,10 @@ export async function updateBreakfast(_previous: BreakfastState, data: FormData)
         message = "Name removed from the paid list.";
       } else if (operation === "draw") {
         const entries = await tx.breakfastEntry.findMany({ orderBy: { id: "asc" } });
-        const winners = selectThree(entries);
+        const winners = selectOne(entries);
         const saved = await tx.breakfastDraw.update({ where: { id: "breakfast" }, data: { winnerIds: winners.map(e => e.id), winnerNames: winners.map(e => e.name), entrantCount: entries.length, drawnAt: new Date() } });
         result = { winnerNames: saved.winnerNames, drawnAt: saved.drawnAt!.toISOString(), entrantCount: saved.entrantCount ?? entries.length };
-        message = "Three winners have been selected and saved.";
+        message = "One winner has been selected and saved.";
       } else throw new Error("Unknown breakfast action.");
     });
   } catch (error) {

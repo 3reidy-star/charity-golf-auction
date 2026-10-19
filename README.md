@@ -70,16 +70,16 @@ Run `npm run test:squares` for the selection and payment-verification tests.
 ## Breakfast paid guest draw
 
 Open `/admin`, sign in with the existing admin password, then choose **Breakfast
-paid guest list & draw 3 winners**. Add names only after breakfast has been paid
+paid guest list & draw 1 winner**. Add names only after breakfast has been paid
 for (one name per line). Each person receives one entry; add an initial or other
 detail for different people with the same name. Entries can be removed before
-the draw. **Select 3 winners** uses server-side cryptographic randomness without
-replacement and saves the result until an administrator explicitly resets it. At least three guests are required.
+the draw. **Draw 1 winner** uses server-side cryptographic randomness without
+replacement and saves the result until an administrator explicitly resets it. At least one paid guest is required.
 The guest list locks once drawn; refreshing or clicking twice cannot redraw it.
 Admins can reset the winners while keeping names, or clear all breakfast names
 and winners after testing. Both require typing RESET and confirming. Resetting
 does not alter auction lots, bids, square reservations or payments.
-Three animated name reels reveal the saved winners one at a time; the animation
+One animated name reel reveals the saved winner; the animation
 does not choose the winners. Reduced-motion preferences are respected.
 Use **Open TV display** for a screen-filling 16:9 layout with large winner names,
 no admin entry forms and a full-screen toggle. The TV view checks for updates

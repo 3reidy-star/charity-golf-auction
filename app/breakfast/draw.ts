@@ -9,14 +9,8 @@ export function parseNames(value: string) {
   return entries;
 }
 
-// Partial Fisher-Yates shuffle: equal chances, no replacement, and no changes
-// to the original list. Use the server's cryptographic random source.
-export function selectThree<T>(entries: readonly T[], pick: (max: number) => number = randomInt): T[] {
-  if (entries.length < 3) throw new Error("Add at least three paid guests before drawing the winners.");
-  const pool = [...entries];
-  for (let i = 0; i < 3; i++) {
-    const j = i + pick(pool.length - i);
-    [pool[i], pool[j]] = [pool[j], pool[i]];
-  }
-  return pool.slice(0, 3);
+// A uniform server-side cryptographic index gives every paid guest the same chance.
+export function selectOne<T>(entries: readonly T[], pick: (max: number) => number = randomInt): T[] {
+  if (!entries.length) throw new Error("Add at least one paid guest before drawing the winner.");
+  return [entries[pick(entries.length)]];
 }
