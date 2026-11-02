@@ -4,6 +4,7 @@ import { createHash } from "crypto";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/app/lib";
+import { closeSquareBoards } from "@/app/squares/lib/close-boards";
 import { CODES, getBoard } from "@/app/squares/config";
 import { cancelUnpaidPurchase, reconcilePurchase } from "@/app/squares/lib/orders";
 async function authorize(){if(!process.env.ADMIN_PASSWORD||(await cookies()).get("auction_admin")?.value!==createHash("sha256").update(process.env.ADMIN_PASSWORD).digest("hex"))redirect("/admin");}
@@ -15,7 +16,7 @@ export async function updateBoard(form:FormData){
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${id}))`;
     await tx.squareBoard.upsert({where:{id},create:{id,closed,winningSquare:winningSquare||null},update:{closed,winningSquare:winningSquare||null}});
   });
-  revalidatePath("/admin/squares");revalidatePath("/squares");
+  revalidatePath("/admin");revalidatePath("/admin/squares");revalidatePath("/squares");
 }
 export async function checkPayment(form:FormData){await authorize();const id=String(form.get("purchaseId"));try{await reconcilePurchase(id);}catch{redirect("/admin/squares?error=verification");}revalidatePath("/admin/squares");}
 
@@ -29,4 +30,12 @@ export async function clearReservation(form:FormData){
   }
   revalidatePath("/squares");revalidatePath("/admin/squares");
   redirect("/admin/squares?cleared=1");
+}
+
+export async function closeSquareSales(_state: { error?: string; success?: string }): Promise<{ error?: string; success?: string }> {
+  await authorize();
+  try { await prisma.$transaction(async tx => closeSquareBoards(tx)); }
+  catch { return { error: "Unable to close square sales. Please refresh and try again." }; }
+  revalidatePath("/admin"); revalidatePath("/admin/squares"); revalidatePath("/squares");
+  return { success: "Both boards are closed to new entries. Existing paid entries have been kept." };
 }

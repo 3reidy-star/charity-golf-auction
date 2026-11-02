@@ -1,3 +1,5 @@
+import CloseSquareSales from "./squares/CloseSquareSales";
+import { BOARDS } from "@/app/squares/config";
 import { cookies } from "next/headers";
 import { createHash } from "crypto";
 import { prisma } from "@/app/lib";
@@ -11,6 +13,7 @@ export default async function AdminPage({searchParams}:{searchParams:Promise<{er
  const cookieStore=await cookies(); const params=await searchParams;
  const authenticated=!!process.env.ADMIN_PASSWORD&&cookieStore.get("auction_admin")?.value===adminToken();
  if(!authenticated)return <main style={{maxWidth:500,margin:"80px auto",padding:24}}><h1>Auction Admin</h1><p>Enter the administrator password.</p>{params.error&&<p style={{color:"crimson"}}>Incorrect password.</p>}<form action={loginAdmin}><input type="password" name="password" required placeholder="Admin password" style={{width:"100%",padding:12,marginBottom:12,fontSize:16}}/><button type="submit">Sign in</button></form></main>;
+ const squareSettings=await prisma.squareBoard.findMany();
  const lots=await prisma.lot.findMany({orderBy:{displayOrder:"asc"},include:{bids:{orderBy:{createdAt:"desc"}}}});
  const total=lots.reduce((sum,lot)=>{const highest=[...lot.bids].sort((a,b)=>b.amountPence-a.amountPence)[0];return sum+(highest?.amountPence??0)},0);
  const inputStyle={padding:9,border:"1px solid #ccc",borderRadius:6};
@@ -18,6 +21,7 @@ export default async function AdminPage({searchParams}:{searchParams:Promise<{er
   <div style={{display:"flex",justifyContent:"space-between",gap:20,alignItems:"center",marginBottom:24}}><div><p style={{margin:0}}>CHARITY AUCTION</p><h1 style={{marginTop:4}}>Admin</h1><p>Current winning total: <strong>{money(total)}</strong></p></div><form action={logoutAdmin}><button type="submit">Sign out</button></form></div>
   <p><a href="/admin/breakfast">Breakfast paid guest list &amp; draw 1 winner →</a></p>
   <p><a href="/admin/squares">Manage Captain’s Drive-In boards and payments →</a></p>
+  <CloseSquareSales boards={BOARDS.map(board=>({title:board.title,closed:squareSettings.some(setting=>setting.id===board.id&&(setting.closed||!!setting.winningSquare))}))} />
   <section style={{border:"2px solid #24563d",borderRadius:12,padding:18,marginBottom:28,background:"#f5faf7"}}><h2 style={{marginTop:0}}>Add auction lot</h2><form action={addLot} style={{display:"flex",gap:10,flexWrap:"wrap",alignItems:"end"}}><label style={{display:"grid",gap:4,fontWeight:700}}>Course<input name="golfClub" required defaultValue="The Wisley or Wentworth" style={{...inputStyle,minWidth:220}}/></label><label style={{display:"grid",gap:4,fontWeight:700}}>Location<input name="location" required defaultValue="Surrey" style={{...inputStyle,width:140}}/></label><label style={{display:"grid",gap:4,fontWeight:700}}>Format / restriction<input name="format" required defaultValue="2 Ball - Must be played in November" style={{...inputStyle,minWidth:260}}/></label><label style={{display:"grid",gap:4,fontWeight:700}}>Expiry<input name="expiry" type="date" required defaultValue="2026-11-30" style={inputStyle}/></label><button type="submit">Add lot</button></form></section>
   {lots.map(lot=>{const sortedBids=[...lot.bids].sort((a,b)=>b.amountPence-a.amountPence);const winningBid=sortedBids[0];return <section key={lot.id} style={{border:lot.active?"1px solid #ddd":"2px solid #9c2f2f",borderRadius:12,padding:20,marginBottom:20,background:lot.active?"white":"#fff7f7"}}>
    <div style={{display:"flex",justifyContent:"space-between",gap:20,alignItems:"center",flexWrap:"wrap"}}><div><h2 style={{marginBottom:5}}>{lot.golfClub}</h2><p style={{marginTop:0}}><strong style={{color:lot.active?"#195633":"#9c2f2f"}}>{lot.active?"OPEN":"SOLD"}</strong>{winningBid&&<> · {lot.active?"Current highest bid":"Sold for"} <strong>{money(winningBid.amountPence)}</strong> by <strong>{winningBid.bidderName}</strong></>}</p></div><form action={toggleLot}><input type="hidden" name="lotId" value={lot.id}/><input type="hidden" name="active" value={String(lot.active)}/><button type="submit">{lot.active?"Mark sold":"Reopen lot"}</button></form></div>
