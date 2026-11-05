@@ -11,6 +11,6 @@ export function parseNames(value: string) {
 
 // A uniform server-side cryptographic index gives every eligible guest the same chance.
 export function selectOne<T>(entries: readonly T[], pick: (max: number) => number = randomInt): T[] {
-  if (!entries.length) throw new Error("Add at least one eligible guest with their own breakfast paid and receipt received before drawing the winner.");
+  if (!entries.length) throw new Error("Add at least one eligible guest with a receipt received before drawing the winner.");
   return [entries[pick(entries.length)]];
 }

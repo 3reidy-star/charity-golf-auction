@@ -70,16 +70,16 @@ Run `npm run test:squares` for the selection and payment-verification tests.
 ## Breakfast guest checklist and draw
 
 Open `/admin`, sign in with the existing admin password, then choose **Breakfast
-guest checklist & draw 1 winner**. Add everyone's names (one per line); new and
-existing guests start with both checklist boxes unticked. Each person receives
+guest checklist & draw 1 winner**. Add everyone's names (one per line); new guests start with Receipt received unticked. Each person receives
 one entry; add an initial or other detail for people with the same name.
 
-Tick **Paid own breakfast** after confirming that the guest paid for their own
-breakfast. Once they hand in their receipt, tick **Receipt received**. Ticks save
-automatically and the row shows **In the draw** only when both are ticked.
-Removing the payment tick also removes the receipt tick. The winner is selected
-server-side only from guests with both confirmations, and at least one eligible
-guest is required. No receipt photographs or uploads are required.
+Tick **Receipt received** when the guest hands in their breakfast receipt. This
+confirms payment and enters them into the draw. There is only one checkbox.
+Ticks save automatically; untick it to remove that guest from the draw. The
+winner is selected server-side only from guests whose receipt is confirmed,
+and at least one eligible guest is required. No receipt upload is required.
+Existing receipt ticks are preserved. The old separate payment flag is no longer
+used to determine eligibility.
 
 **Draw 1 winner** uses server-side cryptographic randomness and saves the result
 until an administrator explicitly resets it.
@@ -89,8 +89,13 @@ and winners after testing. Both require typing RESET and confirming. Resetting
 does not alter auction lots, bids, square reservations or payments.
 One animated name reel reveals the saved winner; the animation
 does not choose the winners. Reduced-motion preferences are respected.
-Use **Open TV display** for a screen-filling 16:9 layout with large winner names,
-no admin entry forms and a full-screen toggle. The TV view checks for updates
+Names and receipt confirmations are managed only on `/admin/breakfast`. Click
+**Continue to full-screen draw** to open `/admin/breakfast/draw`, which requests
+browser fullscreen from the click and shows a screen-filling 16:9 layout with large winner names,
+no admin entry forms and a full-screen toggle. The animation runs for 30 seconds from starting the draw; server response time
+is included, and a late response never reveals an unconfirmed result. A countdown
+and progress bar show time to the reveal. Legacy `?tv=1` links redirect to the draw page.
+The TV view checks for updates
 every three seconds when idle, so another admin window can control the draw.
 The list and results are admin-only. No breakfast payments are collected online.
 

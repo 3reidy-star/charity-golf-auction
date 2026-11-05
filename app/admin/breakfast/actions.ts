@@ -6,7 +6,7 @@ import { validateBreakfastReset } from "@/app/breakfast/reset";
 import { changeBreakfastStatus } from "@/app/breakfast/eligibility";
 import { parseNames, selectOne } from "@/app/breakfast/draw";
 import { requireBreakfastAdmin } from "./auth";
-export type BreakfastState = { error?: string; success?: string; winnerNames?: string[]; drawnAt?: string; entrantCount?: number; entryStatus?: { id: string; paidOwnBreakfast: boolean; receiptReceived: boolean } };
+export type BreakfastState = { error?: string; success?: string; winnerNames?: string[]; drawnAt?: string; entrantCount?: number; entryStatus?: { id: string; receiptReceived: boolean } };
 export async function updateBreakfast(_previous: BreakfastState, data: FormData): Promise<BreakfastState> {
   await requireBreakfastAdmin();
   const operation = String(data.get("operation") ?? "");
@@ -43,9 +43,9 @@ export async function updateBreakfast(_previous: BreakfastState, data: FormData)
         if (value !== "true" && value !== "false") throw new Error("Choose a valid checklist status.");
         const entry = await tx.breakfastEntry.findUnique({ where: { id } });
         if (!entry) throw new Error("Guest not found. Refresh the list.");
-        const status = changeBreakfastStatus(entry, field, value === "true");
+        const status = changeBreakfastStatus(field, value === "true");
         const saved = await tx.breakfastEntry.update({ where: { id }, data: status });
-        result = { entryStatus: { id: saved.id, paidOwnBreakfast: saved.paidOwnBreakfast, receiptReceived: saved.receiptReceived } };
+        result = { entryStatus: { id: saved.id, receiptReceived: saved.receiptReceived } };
         message = "Breakfast checklist saved.";
       } else if (operation === "remove") {
         const id = String(data.get("entryId") ?? "");
@@ -53,7 +53,7 @@ export async function updateBreakfast(_previous: BreakfastState, data: FormData)
         if (!removed.count) throw new Error("This name has already been removed. Refresh the list.");
         message = "Name removed from the guest list.";
       } else if (operation === "draw") {
-        const entries = await tx.breakfastEntry.findMany({ where: { paidOwnBreakfast: true, receiptReceived: true }, orderBy: { id: "asc" } });
+        const entries = await tx.breakfastEntry.findMany({ where: { receiptReceived: true }, orderBy: { id: "asc" } });
         const winners = selectOne(entries);
         const saved = await tx.breakfastDraw.update({ where: { id: "breakfast" }, data: { winnerIds: winners.map(e => e.id), winnerNames: winners.map(e => e.name), entrantCount: entries.length, drawnAt: new Date() } });
         result = { winnerNames: saved.winnerNames, drawnAt: saved.drawnAt!.toISOString(), entrantCount: saved.entrantCount ?? entries.length };
@@ -64,6 +64,6 @@ export async function updateBreakfast(_previous: BreakfastState, data: FormData)
     if (error instanceof Prisma.PrismaClientKnownRequestError) return { error: "Unable to save. Refresh the page and try again." };
     return { error: error instanceof Error ? error.message : "Unable to save. Please try again." };
   }
-  revalidatePath("/admin/breakfast");
+  revalidatePath("/admin/breakfast"); revalidatePath("/admin/breakfast/draw");
   return { success: message, ...result };
 }
