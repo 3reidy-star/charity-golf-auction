@@ -67,16 +67,24 @@ Closing a board prevents new reservations; existing checkouts can still settle.
 Run `npm run test:squares` for the selection and payment-verification tests.
 
 
-## Breakfast paid guest draw
+## Breakfast guest checklist and draw
 
 Open `/admin`, sign in with the existing admin password, then choose **Breakfast
-paid guest list & draw 1 winner**. Add names only after breakfast has been paid
-for (one name per line). Each person receives one entry; add an initial or other
-detail for different people with the same name. Entries can be removed before
-the draw. **Draw 1 winner** uses server-side cryptographic randomness without
-replacement and saves the result until an administrator explicitly resets it. At least one paid guest is required.
+guest checklist & draw 1 winner**. Add everyone's names (one per line); new and
+existing guests start with both checklist boxes unticked. Each person receives
+one entry; add an initial or other detail for people with the same name.
+
+Tick **Paid own breakfast** after confirming that the guest paid for their own
+breakfast. Once they hand in their receipt, tick **Receipt received**. Ticks save
+automatically and the row shows **In the draw** only when both are ticked.
+Removing the payment tick also removes the receipt tick. The winner is selected
+server-side only from guests with both confirmations, and at least one eligible
+guest is required. No receipt photographs or uploads are required.
+
+**Draw 1 winner** uses server-side cryptographic randomness and saves the result
+until an administrator explicitly resets it.
 The guest list locks once drawn; refreshing or clicking twice cannot redraw it.
-Admins can reset the winners while keeping names, or clear all breakfast names
+Admins can reset the winner while keeping names and checklist ticks, or clear all breakfast names
 and winners after testing. Both require typing RESET and confirming. Resetting
 does not alter auction lots, bids, square reservations or payments.
 One animated name reel reveals the saved winner; the animation
@@ -87,7 +95,9 @@ every three seconds when idle, so another admin window can control the draw.
 The list and results are admin-only. No breakfast payments are collected online.
 
 The existing production table setup also creates the two breakfast tables and
-seeds the draw state. It is additive and does not change auction bids or SumUp
+seeds the draw state and adds payment/receipt flags with false defaults. Existing
+names and saved results are preserved; confirmation ticks are not inferred from
+the old guest list. It is additive and does not change auction bids or SumUp
 payments. Preview/local builds skip database setup as before.
 
 Run `npm run test:breakfast` to check name validation and winner selection.

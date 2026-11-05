@@ -50,3 +50,11 @@ CREATE TABLE IF NOT EXISTS "BreakfastDraw" (
   "drawnAt" TIMESTAMP(3)
 );
 INSERT INTO "BreakfastDraw" ("id") VALUES ('breakfast') ON CONFLICT DO NOTHING;
+
+
+-- Existing names remain on the guest list but need explicit payment/receipt
+-- confirmation. Previously saved draw results are preserved.
+BEGIN;
+ALTER TABLE "BreakfastEntry" ADD COLUMN IF NOT EXISTS "paidOwnBreakfast" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "BreakfastEntry" ADD COLUMN IF NOT EXISTS "receiptReceived" BOOLEAN NOT NULL DEFAULT false;
+COMMIT;

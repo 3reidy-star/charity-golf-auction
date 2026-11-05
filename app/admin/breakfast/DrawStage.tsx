@@ -45,7 +45,7 @@ export default function DrawStage({ names, savedNames, drawnAt, entrantCount, tv
   }
   async function start() {
     if (inFlight.current || complete || names.length < 1) return;
-    if (!window.confirm(`Select one winner from ${names.length} paid guests? The result will be saved and the guest list locked.`)) return;
+    if (!window.confirm(`Select one winner from ${names.length} eligible guests? The result will be saved and the guest list locked.`)) return;
     inFlight.current = true;
     setError(""); setRevealed(0); setRunning(true);
     try {
@@ -74,7 +74,7 @@ export default function DrawStage({ names, savedNames, drawnAt, entrantCount, tv
     <div className="drawStageGlow" aria-hidden="true" />
     <p className="drawStageEyebrow">SPREAD A SMILE · BREAKFAST DRAW</p>
     <h2>{complete ? "Our lucky winner!" : running ? "Here comes the winner…" : "Who will be our lucky winner?"}</h2>
-    <p className="drawStageIntro">{complete ? "Congratulations — and thank you for supporting Spread a Smile." : "One entry per paid guest. One lucky winner. Let’s make someone’s day."}</p>
+    <p className="drawStageIntro">{complete ? "Congratulations — and thank you for supporting Spread a Smile." : "Own breakfast paid. Receipt received. One lucky winner. Let’s make someone’s day."}</p>
     <div className="drawReels" aria-hidden="true">{[0].map(index => {
       const won = index < visible;
       const rollingName = names.length ? names[(tick * (index + 3) + index * 7) % names.length] : "Your name here";
@@ -85,10 +85,10 @@ export default function DrawStage({ names, savedNames, drawnAt, entrantCount, tv
         <span className="drawReelFoot">{won ? "CONGRATULATIONS!" : running ? "Selecting…" : "GOOD LUCK!"}</span>
       </article>;
     })}</div>
-    <p className="drawAnnouncement" role="status" aria-live="polite" aria-atomic="true">{running ? visible ? `Winner ${visible}: ${winners[visible - 1]}.` : "Selecting one winner. Good luck!" : complete ? `The winner is ${winners[0]}.` : `${names.length} paid guests entered.`}</p>
-    {complete ? <div className="drawSaved"><span>✓ Result saved</span><p>Selected from {count} paid guests on {new Date(resultDate!).toLocaleString("en-GB", { timeZone: "Europe/London", dateStyle: "medium", timeStyle: "short" })}. Refreshing keeps the same winners.</p></div> : <>
+    <p className="drawAnnouncement" role="status" aria-live="polite" aria-atomic="true">{running ? visible ? `Winner ${visible}: ${winners[visible - 1]}.` : "Selecting one winner. Good luck!" : complete ? `The winner is ${winners[0]}.` : `${names.length} eligible guests entered.`}</p>
+    {complete ? <div className="drawSaved"><span>✓ Result saved</span><p>Selected from {count} eligible guests on {new Date(resultDate!).toLocaleString("en-GB", { timeZone: "Europe/London", dateStyle: "medium", timeStyle: "short" })}. Refreshing keeps the same winners.</p></div> : <>
       <button type="button" onClick={start} disabled={running || names.length < 1} className="drawStartButton">{running ? "Drawing the winner…" : "✦ Draw 1 winner"}</button>
-      <p className="drawStageNote">{names.length < 1 ? "Add at least one paid guest to start." : running ? "The result is being saved and revealed. Please keep this screen open." : `${names.length} guests entered · Check the list first — the result will be saved.`}</p>
+      <p className="drawStageNote">{names.length < 1 ? "Tick own breakfast paid and receipt received for at least one guest to start." : running ? "The result is being saved and revealed. Please keep this screen open." : `${names.length} guests entered · Check the list first — the result will be saved.`}</p>
     </>}
     {error && <p role="alert" className="drawError">{error}</p>}
     <p className="drawFairness">Each guest has the same chance. The server selects and saves the winner; the animation reveals the result.</p>

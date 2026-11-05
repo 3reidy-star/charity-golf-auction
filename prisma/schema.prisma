@@ -68,6 +68,8 @@ model SquareClaim {
 }
 
 model BreakfastEntry {
+  paidOwnBreakfast Boolean @default(false)
+  receiptReceived Boolean @default(false)
   id        String   @id @default(uuid())
   name      String
   nameKey   String   @unique
