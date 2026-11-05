@@ -90,8 +90,12 @@ does not alter auction lots, bids, square reservations or payments.
 One animated name reel reveals the saved winner; the animation
 does not choose the winners. Reduced-motion preferences are respected.
 Names and receipt confirmations are managed only on `/admin/breakfast`. Click
-**Continue to full-screen draw** to open `/admin/breakfast/draw`, which requests
-browser fullscreen from the click and shows a screen-filling 16:9 layout with large winner names,
+**View entrants full screen** to open `/admin/breakfast/entrants`. The page
+automatically scrolls through only the names with receipts ticked, with pause/resume
+controls and a **Continue to draw** button leading to `/admin/breakfast/draw`.
+The names loop after a short pause, and scrolling starts paused for reduced-motion
+preferences. Entry changes are refreshed automatically. These navigation buttons request
+browser fullscreen from the click and show a screen-filling 16:9 layout with large winner names,
 no admin entry forms and a full-screen toggle. Starting the draw has no confirmation popup, so fullscreen is retained. The animation runs for 15 seconds from starting the draw; server response time
 is included, and a late response never reveals an unconfirmed result. A countdown
 and progress bar show time to the reveal. Legacy `?tv=1` links redirect to the draw page.

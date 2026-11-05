@@ -64,6 +64,6 @@ export async function updateBreakfast(_previous: BreakfastState, data: FormData)
     if (error instanceof Prisma.PrismaClientKnownRequestError) return { error: "Unable to save. Refresh the page and try again." };
     return { error: error instanceof Error ? error.message : "Unable to save. Please try again." };
   }
-  revalidatePath("/admin/breakfast"); revalidatePath("/admin/breakfast/draw");
+  revalidatePath("/admin/breakfast"); revalidatePath("/admin/breakfast/draw"); revalidatePath("/admin/breakfast/entrants");
   return { success: message, ...result };
 }
