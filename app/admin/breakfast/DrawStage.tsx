@@ -50,7 +50,6 @@ export default function DrawStage({ names, savedNames, drawnAt, entrantCount, tv
   }
   async function start() {
     if (inFlight.current || complete || names.length < 1) return;
-    if (!window.confirm(`Select one winner from ${names.length} eligible guests? The result will be saved and the guest list locked.`)) return;
     inFlight.current = true; startedAt.current = performance.now(); setElapsed(0);
     if (tv && !document.fullscreenElement && stage.current?.requestFullscreen) stage.current.requestFullscreen().catch(() => setFullScreenError("The draw fills this screen. Use the full-screen button if browser controls remain visible."));
     setError(""); setRevealed(0); setRunning(true);
@@ -91,8 +90,8 @@ export default function DrawStage({ names, savedNames, drawnAt, entrantCount, tv
     {running && <div className="drawTimer"><span>{elapsed < DRAW_DURATION_MS ? `${Math.ceil((DRAW_DURATION_MS - elapsed) / 1000)} seconds to the reveal` : "Confirming the saved result…"}</span><div className="drawTimerTrack" role="progressbar" aria-label="Draw reveal progress" aria-valuemin={0} aria-valuemax={DRAW_DURATION_MS / 1000} aria-valuenow={Math.floor(elapsed / 1000)}><div style={{width:`${elapsed / DRAW_DURATION_MS * 100}%`}} /></div></div>}
     <p className="drawAnnouncement" role="status" aria-live="polite" aria-atomic="true">{running ? visible ? `Winner ${visible}: ${winners[visible - 1]}.` : "Selecting one winner. Good luck!" : complete ? `Unlucky ${winners[0]} you have won a round with me.` : `${names.length} eligible guests entered.`}</p>
     {complete ? <div className="drawSaved"><span>✓ Result saved</span><p>Selected from {count} eligible guests on {new Date(resultDate!).toLocaleString("en-GB", { timeZone: "Europe/London", dateStyle: "medium", timeStyle: "short" })}. Refreshing keeps the same winners.</p></div> : <>
-      <button type="button" onClick={start} disabled={running || names.length < 1} className="drawStartButton">{running ? "Drawing the winner…" : "✦ Start 30-second draw"}</button>
-      <p className="drawStageNote">{names.length < 1 ? "Tick Receipt received for at least one guest to start." : running ? "The winner will be revealed after 30 seconds. Please keep this screen open." : `${names.length} guests entered · Check the list first — the result will be saved.`}</p>
+      <button type="button" onClick={start} disabled={running || names.length < 1} className="drawStartButton">{running ? "Drawing the winner…" : "✦ Start 15-second draw"}</button>
+      <p className="drawStageNote">{names.length < 1 ? "Tick Receipt received for at least one guest to start." : running ? "The winner will be revealed after 15 seconds. Please keep this screen open." : `${names.length} guests entered · Check the list first — the result will be saved.`}</p>
     </>}
     {error && <p role="alert" className="drawError">{error}</p>}
     <p className="drawFairness">Each guest has the same chance. The server selects and saves the winner; the animation reveals the result.</p>

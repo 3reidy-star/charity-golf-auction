@@ -92,7 +92,7 @@ does not choose the winners. Reduced-motion preferences are respected.
 Names and receipt confirmations are managed only on `/admin/breakfast`. Click
 **Continue to full-screen draw** to open `/admin/breakfast/draw`, which requests
 browser fullscreen from the click and shows a screen-filling 16:9 layout with large winner names,
-no admin entry forms and a full-screen toggle. The animation runs for 30 seconds from starting the draw; server response time
+no admin entry forms and a full-screen toggle. Starting the draw has no confirmation popup, so fullscreen is retained. The animation runs for 15 seconds from starting the draw; server response time
 is included, and a late response never reveals an unconfirmed result. A countdown
 and progress bar show time to the reveal. Legacy `?tv=1` links redirect to the draw page.
 The TV view checks for updates
