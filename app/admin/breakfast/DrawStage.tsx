@@ -76,9 +76,9 @@ export default function DrawStage({ names, savedNames, drawnAt, entrantCount, tv
     {fullScreenError && <p className="tvFullScreenHint" role="status">{fullScreenError}</p>}
     <div className="drawStageGlow" aria-hidden="true" />
     <p className="drawStageEyebrow">SPREAD A SMILE · BREAKFAST DRAW</p>
-    <h2>{complete ? "Unlucky you have won a round with me" : running ? "Here comes the winner…" : "Who will be our lucky winner?"}</h2>
-    <p className="drawStageIntro">{complete ? "Congratulations — and thank you for supporting Spread a Smile." : "Receipt received. Entry confirmed. One lucky winner. Let’s make someone’s day."}</p>
-    <div className="drawReels" aria-hidden="true">{[0].map(index => {
+    <h2 className={complete ? "drawWinnerMessage" : undefined}>{complete ? <>Unlucky <span>{winners[0]}</span> you have won a round with me</> : running ? "Here comes the winner…" : "Who will be our lucky winner?"}</h2>
+    {!complete && <p className="drawStageIntro">Receipt received. Entry confirmed. One lucky winner. Let’s make someone’s day.</p>}
+    {complete ? <div className="drawWinnerPhoto"><Image src={prizePhoto} alt="Tim" priority /></div> : <div className="drawReels" aria-hidden="true">{[0].map(index => {
       const won = index < visible;
       const rollingName = names.length ? names[tick % names.length] : "Your name here";
       return <article key={index} className={`drawReel ${won ? "isWinner" : running ? "isSpinning" : ""}`}>
@@ -87,9 +87,9 @@ export default function DrawStage({ names, savedNames, drawnAt, entrantCount, tv
         <div className="drawNameWindow"><strong style={tv ? { fontSize: `clamp(24px, ${Math.min(4.4, Math.max(1.5, 100 / Math.max(1, (won ? winners[index] ?? "" : running ? rollingName : "Ready to win").length)))}vw, 100px)` } : undefined} className={running && !won ? "drawRollingName" : ""}>{won ? winners[index] : running ? rollingName : "Ready to win"}</strong></div>
         <span className="drawReelFoot">{won ? "SEE YOU ON THE COURSE!" : running ? "Selecting…" : "GOOD LUCK!"}</span>
       </article>;
-    })}</div>
+    })}</div>}
     {running && <div className="drawTimer"><span>{elapsed < DRAW_DURATION_MS ? `${Math.ceil((DRAW_DURATION_MS - elapsed) / 1000)} seconds to the reveal` : "Confirming the saved result…"}</span><div className="drawTimerTrack" role="progressbar" aria-label="Draw reveal progress" aria-valuemin={0} aria-valuemax={DRAW_DURATION_MS / 1000} aria-valuenow={Math.floor(elapsed / 1000)}><div style={{width:`${elapsed / DRAW_DURATION_MS * 100}%`}} /></div></div>}
-    <p className="drawAnnouncement" role="status" aria-live="polite" aria-atomic="true">{running ? visible ? `Winner ${visible}: ${winners[visible - 1]}.` : "Selecting one winner. Good luck!" : complete ? `The winner is ${winners[0]}.` : `${names.length} eligible guests entered.`}</p>
+    <p className="drawAnnouncement" role="status" aria-live="polite" aria-atomic="true">{running ? visible ? `Winner ${visible}: ${winners[visible - 1]}.` : "Selecting one winner. Good luck!" : complete ? `Unlucky ${winners[0]} you have won a round with me.` : `${names.length} eligible guests entered.`}</p>
     {complete ? <div className="drawSaved"><span>✓ Result saved</span><p>Selected from {count} eligible guests on {new Date(resultDate!).toLocaleString("en-GB", { timeZone: "Europe/London", dateStyle: "medium", timeStyle: "short" })}. Refreshing keeps the same winners.</p></div> : <>
       <button type="button" onClick={start} disabled={running || names.length < 1} className="drawStartButton">{running ? "Drawing the winner…" : "✦ Start 30-second draw"}</button>
       <p className="drawStageNote">{names.length < 1 ? "Tick Receipt received for at least one guest to start." : running ? "The winner will be revealed after 30 seconds. Please keep this screen open." : `${names.length} guests entered · Check the list first — the result will be saved.`}</p>
