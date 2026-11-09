@@ -9,6 +9,7 @@
     "lint": "next lint",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
+    "test:voting": "node --import tsx --test tests/voting.test.ts",
     "test:squares": "node --import tsx --test tests/squares.test.ts",
     "test:breakfast": "node --import tsx --test tests/breakfast*.test.ts"
   },

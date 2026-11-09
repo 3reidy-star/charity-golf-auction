@@ -19,6 +19,7 @@ export default async function AdminPage({searchParams}:{searchParams:Promise<{er
  const inputStyle={padding:9,border:"1px solid #ccc",borderRadius:6};
  return <main style={{maxWidth:1200,margin:"40px auto",padding:24}}>
   <div style={{display:"flex",justifyContent:"space-between",gap:20,alignItems:"center",marginBottom:24}}><div><p style={{margin:0}}>CHARITY AUCTION</p><h1 style={{marginTop:4}}>Admin</h1><p>Current winning total: <strong>{money(total)}</strong></p></div><form action={logoutAdmin}><button type="submit">Sign out</button></form></div>
+  <p><a href="/admin/voting">Committee voting — open / close voting and view results →</a></p>
   <p><a href="/admin/breakfast">Breakfast guest checklist &amp; draw 1 winner →</a></p>
   <p><a href="/admin/squares">Manage Captain’s Drive-In boards and payments →</a></p>
   <CloseSquareSales boards={BOARDS.map(board=>({title:board.title,closed:squareSettings.some(setting=>setting.id===board.id&&(setting.closed||!!setting.winningSquare))}))} />

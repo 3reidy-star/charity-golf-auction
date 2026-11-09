@@ -83,3 +83,22 @@ model BreakfastDraw {
   entrantCount Int?
   drawnAt      DateTime?
 }
+
+model CommitteeElection {
+  id String @id
+  open Boolean @default(false)
+  openedAt DateTime?
+  closedAt DateTime?
+  ballots CommitteeBallot[]
+}
+
+model CommitteeBallot {
+  id String @id @default(uuid())
+  electionId String
+  election CommitteeElection @relation(fields: [electionId], references: [id])
+  voterHash String
+  newMembers String
+  media String
+  submittedAt DateTime @default(now())
+  @@unique([electionId, voterHash])
+}

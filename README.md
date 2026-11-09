@@ -110,3 +110,32 @@ the old guest list. It is additive and does not change auction bids or SumUp
 payments. Preview/local builds skip database setup as before.
 
 Run `npm run test:breakfast` to check name validation and winner selection.
+
+
+## Committee voting
+
+The banner at the top of `/squares` (and the auction home page) links to `/voting`,
+so the existing pinned WhatsApp link remains useful. The ballot has New Members
+Role (Jose Cubides, Joe Andrews, Adrian Baines) and Media (Joe Andrews, Carl
+Thomas). One selection per role is required, with an abstain option; at least
+one candidate must be chosen. Joe Andrews may be selected for either or both
+roles. No name, member number or login is requested.
+
+The browser is identified by a random, signed HttpOnly cookie. The database
+uniquely stores one ballot per election and browser-token hash; repeat submits
+return the already-recorded state, without changing votes. This is a browser
+limit, not proof of membership: another browser/device or cleared cookies can
+allow another ballot. The signing key uses the existing ADMIN_PASSWORD. Keep
+it unchanged during the election to preserve browser recognition. No IP address
+or fingerprint is stored. Individual choices are not published.
+
+Admin → Committee voting (`/admin/voting`) requires the existing admin password.
+It shows candidate totals and abstentions, and opens/closes voting without
+deleting ballots. Voting starts closed. Both ballot submissions and closing
+lock the same election row, so no new ballot can pass the closure transaction.
+
+`committee-voting.sql` creates only the two election tables and the initial
+closed election. The existing production schema preparation runs this additive
+SQL after Drive-In setup; preview/local builds still skip database changes.
+
+Run `npm run test:voting` for candidate validation and browser-token checks.

@@ -1,3 +1,4 @@
+import VotingBanner from "@/app/voting/VotingBanner";
 import AuctionClient from "@/app/components/AuctionClient";
 import { prisma } from "@/app/lib";
 
@@ -37,6 +38,7 @@ export default async function Home() {
 
   return (
     <main>
+      <VotingBanner />
       <section className="hero">
         <div>
           <p className="eyebrow">CHARITY GOLF FOUR-BALL AUCTION</p>

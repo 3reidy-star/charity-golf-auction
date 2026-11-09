@@ -11,10 +11,12 @@ if (!process.env.DATABASE_URL) {
   console.error('DATABASE_URL is required to prepare the Drive-In tables.');
   process.exit(1);
 }
-const result = spawnSync(process.execPath, [
-  path.join(__dirname, '..', 'node_modules', 'prisma', 'build', 'index.js'), 'db', 'execute',
-  '--file', path.join(__dirname, 'drive-in-tables.sql'),
-  '--schema', path.join(__dirname, '..', 'prisma', 'schema.prisma'),
-], { stdio: 'inherit' });
-if (result.error) console.error('Could not start the database preparation step.');
-process.exit(result.status ?? 1);
+for (const file of ['drive-in-tables.sql', 'committee-voting.sql']) {
+  const result = spawnSync(process.execPath, [
+    path.join(__dirname, '..', 'node_modules', 'prisma', 'build', 'index.js'), 'db', 'execute',
+    '--file', path.join(__dirname, file),
+    '--schema', path.join(__dirname, '..', 'prisma', 'schema.prisma'),
+  ], { stdio: 'inherit' });
+  if (result.error) console.error('Could not start the database preparation step.');
+  if (result.status !== 0) process.exit(result.status ?? 1);
+}
