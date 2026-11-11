@@ -5,15 +5,15 @@ import { makeVoterToken, voterHash } from "../app/voting/browser-token";
 
 test("ballot contains exactly the requested candidates for each role", () => {
   assert.deepEqual(ROLES[0].candidates.map(c=>c.name),["Jose Cubides","Joe Andrews","Adrian Baines"]);
-  assert.deepEqual(ROLES[1].candidates.map(c=>c.name),["Joe Andrews","Carl Thomas"]);
+  assert.deepEqual(ROLES[1].candidates.map(c=>c.name),["Joe Andrews"]);
   assert.deepEqual(validateBallot("joe-andrews","joe-andrews"),{newMembers:"joe-andrews",media:"joe-andrews"});
 });
 
 test("wrong-role candidates and invalid or missing choices are rejected", () => {
   for (const value of [null,undefined,"","carl-thomas","jose-cubides<script>",{},["jose-cubides"]]) assert.throws(()=>validateBallot(value,"joe-andrews"));
-  for (const value of [null,"","jose-cubides","adrian-baines"]) assert.throws(()=>validateBallot("jose-cubides",value));
+  for (const value of [null,"","jose-cubides","adrian-baines","carl-thomas"]) assert.throws(()=>validateBallot("jose-cubides",value));
   assert.throws(()=>validateBallot(ABSTAIN,ABSTAIN));
-  assert.deepEqual(validateBallot(ABSTAIN,"carl-thomas"),{newMembers:ABSTAIN,media:"carl-thomas"});
+  assert.deepEqual(validateBallot(ABSTAIN,"joe-andrews"),{newMembers:ABSTAIN,media:"joe-andrews"});
   assert.deepEqual(validateBallot("adrian-baines",ABSTAIN),{newMembers:"adrian-baines",media:ABSTAIN});
 });
 

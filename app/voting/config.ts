@@ -8,7 +8,6 @@ export const ROLES = [
   ] },
   { id: "media", title: "Media", candidates: [
     { id: "joe-andrews", name: "Joe Andrews" },
-    { id: "carl-thomas", name: "Carl Thomas" },
   ] },
 ] as const;
 export function validateBallot(newMembers: unknown, media: unknown) {
